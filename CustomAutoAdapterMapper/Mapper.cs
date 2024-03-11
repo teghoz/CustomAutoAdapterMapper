@@ -6,19 +6,19 @@ using System.Reflection;
 
 namespace CustomAutoAdapterMapper
 {
-    public class Mapper
+    public static class Mapper
     {
-        public List<T> MapCollection<T>(string jsonResposne, List<T> destination, Action<Option> options)
+        public static List<T> MapCollection<T>(this string jsonResposne, List<T> destination, Action<Option> options)
         {
             var mapperOptions = new Option();
             options?.Invoke(mapperOptions);
             List<T> result = destination;
 
-            Validations(mapperOptions);
+            Validate(mapperOptions);
 
             if (string.IsNullOrEmpty(jsonResposne))
             {
-                return result;
+                return new List<T>();
             }
 
             JObject jsonObject = JObject.Parse(jsonResposne);
@@ -27,47 +27,54 @@ namespace CustomAutoAdapterMapper
 
             foreach (var entry in entries)
             {
-                T collectionItem = default(T);
-                var collectionItemProperties = collectionItem.GetType().GetProperties().ToList();  
+                T collectionItem = Activator.CreateInstance<T>();
 
-                foreach (var property in collectionItemProperties )
-                {
-                    var mappedValue = entry[property.Name]?.ToString() ?? null;
-                    SetPropertyValue(collectionItem, property.Name, mappedValue);
-                }
-
-                var matchedProperties = collectionItem.GetType().GetProperties().Where(i => mapperOptions.MappingKeys.Contains(i.Name)).ToList();
-
-                foreach(var property in matchedProperties)
-                {
-                    var incomingPropertyValue = mapperOptions.Mappings[property.Name];
-                    if (entry[incomingPropertyValue] != null)
-                    {
-
-                    }
-                }
-
+                SeedCollectionItem(entry, collectionItem);
+                SeedMappedPropertiesOfItem(entry, collectionItem, mapperOptions);
+                result.Add(collectionItem);
             }
 
             return result;
         }
-
-        private void Validations(Option option)
+        private static void SeedCollectionItem<T>(JToken entry, T collectionItem)
         {
-            if(option == null)
-            {
-                throw new ArgumentNullException("Options is required to map");
-            }
+            var collectionItemProperties = collectionItem.GetType().GetProperties().ToList();
 
-            if (string.IsNullOrEmpty(option.RootKey))
+            foreach (var property in collectionItemProperties)
             {
-                throw new ArgumentNullException("Root Key Is Required to map");
+                var mappedValue = entry[property.Name]?.ToString() ?? null;
+                SetPropertyValue(collectionItem, property.Name, mappedValue);
             }
         }
-        private void SetPropertyValue<T>(T desinationObject, string propertyName, object value)
+        private static void SeedMappedPropertiesOfItem<T>(JToken entry, T collectionItem, Option mapperOptions)
+        {
+            var matchedProperties = collectionItem.GetType().GetProperties().Where(i => mapperOptions.MappingKeys.Contains(i.Name)).ToList();
+
+            foreach (var property in matchedProperties)
+            {
+                var incomingProperty = mapperOptions.Mappings[property.Name];
+                if (entry[incomingProperty] != null)
+                {
+                    var mappedPropertyValue = entry[incomingProperty].ToString() ?? null;
+
+                    if (!string.IsNullOrEmpty(mappedPropertyValue))
+                    {
+                        SetPropertyValue(collectionItem, property.Name, mappedPropertyValue);
+                    }
+                }
+            }
+        }
+        private static void Validate(Option option)
+        {
+            if (string.IsNullOrEmpty(option.RootKey))
+            {
+                throw new ArgumentNullException(nameof(option.RootKey), "Root Key Is Required to map");
+            }
+        }
+        private static void SetPropertyValue<T>(T desinationObject, string propertyName, object value)
         {
             PropertyInfo prop = desinationObject.GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
-            if(prop != null && prop.CanWrite)
+            if (prop != null && prop.CanWrite)
             {
                 prop.SetValue(desinationObject, value, null);
             }
