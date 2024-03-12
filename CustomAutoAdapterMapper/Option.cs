@@ -8,11 +8,11 @@ namespace CustomAutoAdapterMapper
         public string RootKey { get; set; }
         public string ItemKey { get; set; }
         public Dictionary<string, string> Mappings { get; set; }
-        public List<string> MappingKeys 
+        public List<string> MappingKeys
         {
             get
             {
-                if(Mappings == null)
+                if (Mappings == null)
                 {
                     return new List<string>();
                 }
