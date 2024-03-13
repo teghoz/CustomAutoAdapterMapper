@@ -12,9 +12,14 @@ Additionally, most properties or fields supplied might not match the expected pr
 This library solves the problems of mapping a JSON string to a known type.</Description>
     <RepositoryUrl>https://github.com/teghoz/CustomAutoAdapterMapper</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>license.txt</PackageLicenseFile>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="..\license.txt">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
     <None Include="..\README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
