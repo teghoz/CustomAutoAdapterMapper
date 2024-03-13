@@ -19,15 +19,23 @@ namespace CustomAutoAdapterMapper.Tests
         [Test]
         public void TestMapperThrowsExceptionWhenRootKeyOptionIsNotPassed()
         {
-            var endpointResult = "";
+            var endpointResult = JsonConvert.SerializeObject(new { Test = "ABCDE" });           
             var destinationCollection = new List<TestObject>();
             Assert.Throws<RootKeyOptionNullException>(() => endpointResult.MapCollection(destinationCollection, null));
         }
 
         [Test]
-        public void TestMapperThrowsExceptionWhenEndpointResultIsEmptyOrNull()
+        public void TestMapperThrowsExceptionWhenJsonStringIsInvalid()
         {
             var endpointResult = "";
+            var destinationCollection = new List<TestObject>();
+            Assert.Throws<JsonContentException>(() => endpointResult.MapCollection(destinationCollection, null));
+        }
+
+        [Test]
+        public void TestMapperThrowsExceptionWhenEndpointResultCannotBePassedToAnObject()
+        {
+            var endpointResult = "[1,2,3,4,5]";
             var destinationCollection = new List<TestObject>();
 
             Assert.Throws<JsonReaderException>(() => endpointResult.MapCollection(destinationCollection, options =>

@@ -1,4 +1,5 @@
 ﻿using CustomAutoAdapterMapper.Exceptions;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -13,35 +14,12 @@ namespace CustomAutoAdapterMapper
         {
             var mapperOptions = new Option();
             options?.Invoke(mapperOptions);
-            List<T> result = destination;
             JObject jsonObject = null;
 
-            Validate(mapperOptions);
-
-            try
-            {
-                jsonObject = JObject.Parse(jsonResponse);
-            }
-            catch(Exception)
-            {
-                throw;
-            }
-
-            var rootProperty = jsonObject[mapperOptions.RootKey];
-
-            if (rootProperty == null)
-            {
-                throw new RootKeyPropertyNullException("Root Property Does Not Exist In Object!!!!!");
-            }
-
+            var rootProperty = Validate(jsonResponse, jsonObject, mapperOptions);
             var entries = rootProperty.ToList();
 
-            if (string.IsNullOrEmpty(jsonResponse))
-            {
-                return new List<T>();
-            }
-
-            if(MapperShouldIterateThroughEntireCollection(result, mapperOptions))
+            if(MapperShouldIterateThroughEntireIncomingCollection(destination, mapperOptions))
             {
                 foreach (var entry in entries)
                 {
@@ -49,20 +27,32 @@ namespace CustomAutoAdapterMapper
 
                     SeedCollectionItem(entry, collectionItem);
                     SeedMappedPropertiesOfItem(entry, collectionItem, mapperOptions);
-                    result.Add(collectionItem);
+                    destination.Add(collectionItem);
                 }
             }
             else
             {
-                foreach (var entry in result)
+                foreach (var entry in destination)
                 {
-                    SeedknownCollectionItem(entries, entry, mapperOptions);
+                    SeedknownCollectionOfItem(entries, entry, mapperOptions);
                 }
             }
 
-            return result;
+            return destination;
         }
-        private static bool MapperShouldIterateThroughEntireCollection<T>(List<T> destination, Option options)
+        private static bool JsonStringIsValid(string jsonString)
+        {
+            try
+            {
+                JToken.Parse(jsonString);
+                return true;
+            }
+            catch (JsonReaderException)
+            {
+                return false;
+            }
+        }
+        private static bool MapperShouldIterateThroughEntireIncomingCollection<T>(List<T> destination, Option options)
         {
             var result = false;
             var itemKeyIdentifierIsEmpty = destination != null &&
@@ -100,7 +90,7 @@ namespace CustomAutoAdapterMapper
                 }
             }
         }
-        private static void SeedknownCollectionItem<T>(List<JToken> entries, T entry, Option mapperOptions)
+        private static void SeedknownCollectionOfItem<T>(List<JToken> entries, T entry, Option mapperOptions)
         {
             if (string.IsNullOrEmpty(mapperOptions.ItemKey))
             {
@@ -134,12 +124,35 @@ namespace CustomAutoAdapterMapper
                 }
             }
         }
-        private static void Validate(Option option)
+        private static JToken Validate(string jsonResponse, JObject jsonObject, Option option)
         {
+            if (JsonStringIsValid(jsonResponse) == false)
+            {
+                throw new JsonContentException("Json Content Supplied Is Invalid");
+            }
+
             if (string.IsNullOrEmpty(option.RootKey))
             {
                 throw new RootKeyOptionNullException("Root Key Is Required to map");
             }
+
+            try
+            {
+                jsonObject = JObject.Parse(jsonResponse);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+
+            var rootProperty = jsonObject[option.RootKey];
+
+            if (rootProperty == null)
+            {
+                throw new RootKeyPropertyNullException("Root Property Does Not Exist In Object!!!!!");
+            }
+
+            return rootProperty;
         }
         private static void SetPropertyValue<T>(T desinationObject, string propertyName, object value)
         {
