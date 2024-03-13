@@ -10,6 +10,7 @@
 Additionally, most properties or fields supplied might not match the expected properties or fields of the known type. Hence, custom mapping needs to be established.
 
 This library solves the problems of mapping a JSON string to a known type.</Description>
+    <RepositoryUrl>https://github.com/teghoz/CustomAutoAdapterMapper</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
