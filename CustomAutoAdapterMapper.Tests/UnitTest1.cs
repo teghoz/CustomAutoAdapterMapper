@@ -14,6 +14,39 @@ namespace CustomAutoAdapterMapper.Tests
             var client = new HttpClient();
             var result = client.GetAsync("https://api.publicapis.org/entries").Result;
             _result = result.Content.ReadAsStringAsync().Result;
+            if (string.IsNullOrEmpty(_result))
+            {
+                _result = Fallback();
+            }
+        }
+
+        public string Fallback()
+        {
+            return $@"
+                {{
+                    'count': 1427,
+                    'entries': [
+                        {{
+                            'API': 'AdoptAPet',
+                            'Description': 'Resource to help get pets adopted',
+                            'Auth': 'apiKey',
+                            'HTTPS': true,
+                            'Cors': 'yes',
+                            'Link': 'https://www.adoptapet.com/public/apis/pet_list.html',
+                            'Category': 'Animals'
+                        }},
+                        {{
+                            'API': 'Axolotl',
+                            'Description': 'Collection of axolotl pictures and facts',
+                            'Auth': '',
+                            'HTTPS': true,
+                            'Cors': 'no',
+                            'Link': 'https://theaxolotlapi.netlify.app/',
+                            'Category': 'Animals'
+                        }}
+                    ]
+                }}
+            ";
         }
 
         [Test]
@@ -92,9 +125,7 @@ namespace CustomAutoAdapterMapper.Tests
         public void TestMapperThrowsExceptionWhenCollectionIsNotEmptyAndItemKeyIsNeeded()
         {
             var client = new HttpClient();
-            var httpResponseMessage = client.GetAsync("https://api.publicapis.org/entries").Result;
-            var actualResponse = httpResponseMessage.Content.ReadAsStringAsync().Result;
-            var publicAPIResult = JsonConvert.DeserializeObject<PublicAPIViewModelWithVariation>(actualResponse);
+            var publicAPIResult = JsonConvert.DeserializeObject<PublicAPIViewModelWithVariation>(_result);
 
             var destinationCollection = publicAPIResult.Entries;
 
@@ -114,9 +145,7 @@ namespace CustomAutoAdapterMapper.Tests
         public void TestMapperReturnsCorrectCollectionWithMappingConfigurationWithAnEmptyCollectionSupplied()
         {
             var client = new HttpClient();
-            var httpResponseMessage = client.GetAsync("https://api.publicapis.org/entries").Result;
-            var actualResponse = httpResponseMessage.Content.ReadAsStringAsync().Result;
-            var publicAPIResult = JsonConvert.DeserializeObject<PublicAPIViewModel>(actualResponse);
+            var publicAPIResult = JsonConvert.DeserializeObject<PublicAPIViewModel>(_result);
 
             var destinationCollection = new List<TestObjectWithVariation>();
             var result = _result.MapCollection(destinationCollection, options =>
@@ -146,12 +175,10 @@ namespace CustomAutoAdapterMapper.Tests
         public void TestMapperReturnsCorrectCollectionWithMappingConfigurationWithCollection()
         {
             var client = new HttpClient();
-            var httpResponseMessage = client.GetAsync("https://api.publicapis.org/entries").Result;
-            var actualResponse = httpResponseMessage.Content.ReadAsStringAsync().Result;
-            var publicAPIResult = JsonConvert.DeserializeObject<PublicAPIViewModel>(actualResponse);
+            var publicAPIResult = JsonConvert.DeserializeObject<PublicAPIViewModel>(_result);
 
             var fixture = new Fixture();
-            var destinationCollection = JsonConvert.DeserializeObject<PublicAPIViewModelWithVariation>(actualResponse);
+            var destinationCollection = JsonConvert.DeserializeObject<PublicAPIViewModelWithVariation>(_result);
 
             var result = _result.MapCollection(destinationCollection.Entries, options =>
             {
