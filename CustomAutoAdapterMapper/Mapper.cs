@@ -57,7 +57,7 @@ namespace CustomAutoAdapterMapper
             var result = false;
             var itemKeyIdentifierIsEmpty = destination != null &&
                 !string.IsNullOrEmpty(options.ItemKey) &&
-                destination.All(x => string.IsNullOrEmpty(x.GetType().GetProperty(options.ItemKey).GetValue(x).ToString()));
+                destination.All(x => string.IsNullOrEmpty(x.GetType()?.GetProperty(options.ItemKey)?.GetValue(x)?.ToString() ?? string.Empty));
 
             result = destination == null || destination.Count == 0 || itemKeyIdentifierIsEmpty;
             return result;
