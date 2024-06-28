@@ -9,5 +9,8 @@
         public string Cors { get; set; }
         public string Link { get; set; }
         public string CategoryVariation { get; set; }
+        public string ReportsToEmailVariation { get; set; }
+        public int ReportsToIdInCompanyVariation { get; set; }
+        public int EmployeeIdInCompanyVariation { get; set; }
     }
 }
