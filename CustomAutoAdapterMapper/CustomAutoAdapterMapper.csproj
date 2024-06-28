@@ -13,7 +13,7 @@ This library solves the problems of mapping a JSON string to a known type.</Desc
     <RepositoryUrl>https://github.com/teghoz/CustomAutoAdapterMapper</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseFile>license.txt</PackageLicenseFile>
-    <Version>1.0.1</Version>
+    <Version>1.0.3</Version>
   </PropertyGroup>
 
   <ItemGroup>

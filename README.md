@@ -20,7 +20,13 @@ Example endpoint: https://api.publicapis.org/entries
             "HTTPS": true,
             "Cors": "yes",
             "Link": "https://www.adoptapet.com/public/apis/pet_list.html",
-            "Category": "Animals"
+            "Category": "Animals",
+            "Parent": {
+              "SomeProperties": "ABC",
+              "SubParent": {
+                "SubParentProperty": "123"
+              }
+            }
         },
         {
             "API": "Axolotl",
@@ -29,7 +35,13 @@ Example endpoint: https://api.publicapis.org/entries
             "HTTPS": true,
             "Cors": "no",
             "Link": "https://theaxolotlapi.netlify.app/",
-            "Category": "Animals"
+            "Category": "Animals",
+            "Parent": {
+              "SomeProperties": "DEF",
+              "SubParent": {
+                "SubParentProperty": "456"
+              }
+            }
         }
     ]
 }
@@ -46,7 +58,8 @@ result.MapCollection(destinationCollection.Entries, options =>
     {
         { "DescriptionVariation", "Description" },
         { "AuthVariation", "Auth" },
-        { "CategoryVariation", "Category" },
+        { "PropertyOne", "Parent.SomeProperties" },
+        { "PropertyTwo", "Parent.SubParent.SubParentProperty" },
     };
 });
 ```
@@ -63,6 +76,8 @@ public class TestObjectWithVariation
     public string Cors { get; set; }
     public string Link { get; set; }
     public string CategoryVariation { get; set; }
+    public string PropertyOne { get; set; }
+    public string PropertyTwo { get; set; }
 }
 ```
 

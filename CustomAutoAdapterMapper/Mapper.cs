@@ -34,7 +34,7 @@ namespace CustomAutoAdapterMapper
             {
                 foreach (var entry in destination)
                 {
-                    SeedknownCollectionOfItem(entries, entry, mapperOptions);
+                    SeedKnownCollectionOfItem(entries, entry, mapperOptions);
                 }
             }
 
@@ -54,43 +54,58 @@ namespace CustomAutoAdapterMapper
         }
         private static bool MapperShouldIterateThroughEntireIncomingCollection<T>(List<T> destination, Option options)
         {
-            var result = false;
             var itemKeyIdentifierIsEmpty = destination != null &&
-                !string.IsNullOrEmpty(options.ItemKey) &&
-                destination.All(x => string.IsNullOrEmpty(x.GetType()?.GetProperty(options.ItemKey)?.GetValue(x)?.ToString() ?? string.Empty));
+                                           !string.IsNullOrEmpty(options.ItemKey) &&
+                                           destination.All(x => string.IsNullOrEmpty(x.GetType()?.GetProperty(options.ItemKey)?.GetValue(x)?.ToString() ?? string.Empty));
 
-            result = destination == null || destination.Count == 0 || itemKeyIdentifierIsEmpty;
+            var result = destination == null || destination.Count == 0 || itemKeyIdentifierIsEmpty;
             return result;
         }
         private static void SeedCollectionItem<T>(JToken entry, T collectionItem)
         {
-            var collectionItemProperties = collectionItem.GetType().GetProperties().ToList();
+            var collectionItemProperties = collectionItem
+                .GetType()
+                .GetProperties()
+                .ToList();
 
             foreach (var property in collectionItemProperties)
             {
-                var mappedValue = entry[property.Name]?.ToString() ?? null;
+                var mappedValue = entry.SelectToken(property.Name)?.ToObject(property.PropertyType) ?? null;
                 SetPropertyValue(collectionItem, property.Name, mappedValue);
             }
         }
         private static void SeedMappedPropertiesOfItem<T>(JToken entry, T collectionItem, Option mapperOptions)
         {
-            var matchedProperties = collectionItem.GetType().GetProperties().Where(i => mapperOptions.MappingKeys.Contains(i.Name)).ToList();
+            var matchedProperties = collectionItem
+                .GetType()
+                .GetProperties()
+                .Where(i => mapperOptions.MappingKeys.Contains(i.Name))
+                .ToList();
 
             foreach (var property in matchedProperties)
             {
                 var incomingProperty = mapperOptions.Mappings[property.Name];
+
                 if (entry[incomingProperty] != null)
                 {
-                    var mappedPropertyValue = entry[incomingProperty].ToString() ?? null;
+                    var mappedPropertyValue = entry.SelectToken(incomingProperty)?.ToObject(property.PropertyType) ?? null;
 
-                    if (!string.IsNullOrEmpty(mappedPropertyValue))
+                    if (mappedPropertyValue != null)
+                    {
+                        SetPropertyValue(collectionItem, property.Name, mappedPropertyValue);
+                    }
+                }
+                else
+                {
+                    var mappedPropertyValue = entry.SelectToken(incomingProperty)?.ToObject(property.PropertyType) ?? null;
+                    if (mappedPropertyValue != null)
                     {
                         SetPropertyValue(collectionItem, property.Name, mappedPropertyValue);
                     }
                 }
             }
         }
-        private static void SeedknownCollectionOfItem<T>(List<JToken> entries, T entry, Option mapperOptions)
+        private static void SeedKnownCollectionOfItem<T>(List<JToken> entries, T entry, Option mapperOptions)
         {
             if (string.IsNullOrEmpty(mapperOptions.ItemKey))
             {
@@ -99,27 +114,30 @@ namespace CustomAutoAdapterMapper
 
             var keyItemExist = entry.GetType().GetProperty(mapperOptions.ItemKey);
 
-            if (keyItemExist != null)
+            if (keyItemExist == null) return;
+            var propertyKeyItemValue = entry.GetType()?.GetProperty(mapperOptions.ItemKey)?.GetValue(entry)?.ToString() ?? null;
+            if (propertyKeyItemValue == null) return;
+            var incomingRecord = entries
+                .Where(e => e.Values().Any(ee => ee.ToString() == propertyKeyItemValue))
+                .FirstOrDefault();
+                    
+            var matchedProperties = entry
+                .GetType()
+                .GetProperties()
+                .Where(i => mapperOptions.MappingKeys.Contains(i.Name))
+                .ToList();
+
+            foreach (var property in matchedProperties)
             {
-                var propertyKeyItemValue = entry.GetType()?.GetProperty(mapperOptions.ItemKey)?.GetValue(entry)?.ToString() ?? null;
-                if (propertyKeyItemValue != null)
+                var incomingProperty = mapperOptions.Mappings[property.Name];
+
+                if (incomingRecord[incomingProperty] != null)
                 {
-                    var incomingRecord = entries.Where(e => e.Values().Any(ee => ee.ToString() == propertyKeyItemValue)).FirstOrDefault();
-                    var matchedProperties = entry.GetType().GetProperties().Where(i => mapperOptions.MappingKeys.Contains(i.Name)).ToList();
+                    var mappedValue = incomingRecord[incomingProperty].ToString();
 
-                    foreach (var property in matchedProperties)
+                    if (!string.IsNullOrEmpty(mappedValue))
                     {
-                        var incomingProperty = mapperOptions.Mappings[property.Name];
-
-                        if (incomingRecord[incomingProperty] != null)
-                        {
-                            var mappedValue = incomingRecord[incomingProperty].ToString();
-
-                            if (!string.IsNullOrEmpty(mappedValue))
-                            {
-                                SetPropertyValue(entry, property.Name, mappedValue);
-                            }
-                        }
+                        SetPropertyValue(entry, property.Name, mappedValue);
                     }
                 }
             }
@@ -154,12 +172,15 @@ namespace CustomAutoAdapterMapper
 
             return rootProperty;
         }
-        private static void SetPropertyValue<T>(T desinationObject, string propertyName, object value)
+        private static void SetPropertyValue<T>(T destinationObject, string propertyName, object value)
         {
-            PropertyInfo prop = desinationObject.GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
+            var prop = destinationObject
+                .GetType()
+                .GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
+            
             if (prop != null && prop.CanWrite)
             {
-                prop.SetValue(desinationObject, value, null);
+                prop.SetValue(destinationObject, value, null);
             }
         }
     }

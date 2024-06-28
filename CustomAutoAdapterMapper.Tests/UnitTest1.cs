@@ -20,7 +20,7 @@ namespace CustomAutoAdapterMapper.Tests
             }
         }
 
-        public string Fallback()
+        private string Fallback()
         {
             return $@"
                 {{
@@ -202,6 +202,73 @@ namespace CustomAutoAdapterMapper.Tests
             Assert.That(firstItemFromOriginal.Auth, Is.EqualTo(firstItem.AuthVariation));
             Assert.That(firstItemFromOriginal.Category, Is.EqualTo(firstItem.CategoryVariation));
             Assert.That(result, Is.EqualTo(destinationCollection.Entries));
+        }
+        
+        private string SampleCollectionWithNestedObjectsAsProperties()
+        {
+            return $@"
+                {{
+                    'count': 1427,
+                    'entries': [
+                        {{
+                            'API': 'AdoptAPet',
+                            'Description': 'Resource to help get pets adopted',
+                            'Auth': 'apiKey',
+                            'HTTPS': true,
+                            'Cors': 'yes',
+                            'work': {{
+                                'reportsToIdInCompany' : 64,
+                                'employeeIdInCompany' : 140,
+                                'reportsTo': {{
+                                    'email': 'somebody@nomail.com'
+                                }}
+                            }},
+                            'Link': 'https://www.adoptapet.com/public/apis/pet_list.html',
+                            'Category': 'Animals'
+                        }},
+                        {{
+                            'API': 'Axolotl',
+                            'Description': 'Collection of axolotl pictures and facts',
+                            'Auth': '',
+                            'HTTPS': true,
+                            'Cors': 'no',
+                            'work': {{
+                                'reportsToIdInCompany' : 50,
+                                'employeeIdInCompany' : 160,
+                                'reportsTo': {{
+                                    'email': 'somebodyelse@nomail.com'
+                                }}
+                            }},
+                            'Link': 'https://theaxolotlapi.netlify.app/',
+                            'Category': 'Animals'
+                        }}
+                    ]
+                }}
+            ";
+        }
+        
+        [Test]
+        public void TestMapperReturnsCollectionWithMappingConfigurationCorrectWithNestedProperties()
+        {
+            var destinationCollection = new List<TestObjectWithVariation>();
+            var nestedResult = SampleCollectionWithNestedObjectsAsProperties();
+            var result = nestedResult.MapCollection(destinationCollection, options =>
+            {
+                options.RootKey = "entries";
+                options.Mappings = new Dictionary<string, string>
+                {
+                    { "DescriptionVariation", "Description" },
+                    { "AuthVariation", "Auth" },
+                    { "CategoryVariation", "Category" },
+                    { "ReportsToIdInCompanyVariation", "work.reportsToIdInCompany" },
+                    { "ReportsToEmailVariation", "work.reportsTo.email"}
+                };
+            });
+
+            var firstItem = result.FirstOrDefault();
+
+            Assert.That(result, Is.EqualTo(destinationCollection));
+            Assert.That(firstItem.DescriptionVariation, Is.Not.Null);
         }
     }
 }
