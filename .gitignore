@@ -1,6 +1,4 @@
-CustomAutoAdapterMapper/obj/
+obj
 CustomAutoAdapterMapper/.vs/
-CustomAutoAdapterMapper.Tests/bin/
-CustomAutoAdapterMapper.Tests/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs
-CustomAutoAdapterMapper.Tests/obj/
-CustomAutoAdapterMapper/bin/
+bin/
+.idea

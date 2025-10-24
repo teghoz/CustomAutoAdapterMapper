@@ -1,8 +1,7 @@
-﻿namespace CustomAutoAdapterMapper.Tests
+﻿namespace CustomAutoAdapterMapper.Tests;
+
+public class PublicApiViewModelWithVariation
 {
-    public class PublicAPIViewModelWithVariation
-    {
-        public int Count { get; set; }
-        public List<TestObjectWithVariation> Entries { get; set; }
-    }
+    public int Count { get; set; }
+    public List<TestObjectWithVariation> Entries { get; set; }
 }

@@ -1,7 +1,11 @@
 # CustomAutoAdapterMapper
-In Organizations that synchronize information from different systems supplied by specified endpoints, mapping unknown types in real-time is a pain, considering C# is "strongly typed." Creating contracts for every third-party system to be implemented is also challenging, as development work is needed each time. 
 
-Additionally, most properties or fields supplied might not match the expected properties or fields of the known type. Hence, custom mapping needs to be established.
+In Organizations that synchronize information from different systems supplied by specified endpoints, mapping unknown
+types in real-time is a pain, considering C# is "strongly typed." Creating contracts for every third-party system to be
+implemented is also challenging, as development work is needed each time.
+
+Additionally, most properties or fields supplied might not match the expected properties or fields of the known type.
+Hence, custom mapping needs to be established.
 
 This library solves the problems of mapping a JSON string to a known type.
 
@@ -64,7 +68,8 @@ result.MapCollection(destinationCollection.Entries, options =>
 });
 ```
 
-The dictionary In the example above maps the value of `Description` in `TestObject` to `DescriptionVariation` in `TestObjectWithVariation`
+The dictionary In the example above maps the value of `Description` in `TestObject` to `DescriptionVariation` in
+`TestObjectWithVariation`
 
 ```C#
 public class TestObjectWithVariation
@@ -95,9 +100,10 @@ public class TestObject
 ```
 
 # Options
-Value  | Description
-------------- | -------------
-RootKey | Specifies what Property holds the collection that needs to be mapped
-Mappings  | Specified the dictionary that holds the custom property/field mappings needed
-ItemKey  | Used to Identify the Unique Identifier of an item in the collection
+
+ Value    | Description                                                                   
+----------|-------------------------------------------------------------------------------
+ RootKey  | Specifies what Property holds the collection that needs to be mapped          
+ Mappings | Specified the dictionary that holds the custom property/field mappings needed 
+ ItemKey  | Used to Identify the Unique Identifier of an item in the collection           
 
