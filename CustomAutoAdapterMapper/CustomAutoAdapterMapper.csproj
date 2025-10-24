@@ -9,8 +9,8 @@
         <RepositoryUrl>https://github.com/teghoz/CustomAutoAdapterMapper</RepositoryUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>license.txt</PackageLicenseFile>
-        <Version>1.0.4</Version>
-        <PackageReleaseNotes>v1.0.4: Fixed nested property mapping with dot notation (SelectToken issue). Improved documentation with comprehensive examples.</PackageReleaseNotes>
+        <Version>1.0.5</Version>
+        <PackageReleaseNotes>v1.0.5: Fixed nested property mapping with dot notation in both create and update modes. Added null check for incomingRecord. Improved documentation with comprehensive examples.</PackageReleaseNotes>
         <PackageProjectUrl>https://github.com/teghoz/CustomAutoAdapterMapper</PackageProjectUrl>
     </PropertyGroup>
 
