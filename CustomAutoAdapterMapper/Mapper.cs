@@ -86,21 +86,11 @@ namespace CustomAutoAdapterMapper
             {
                 var incomingProperty = mapperOptions.Mappings[property.Name];
 
-                if (entry[incomingProperty] != null)
-                {
-                    var mappedPropertyValue =
-                        entry.SelectToken(incomingProperty)?.ToObject(property.PropertyType) ?? null;
+                var mappedPropertyValue =
+                    entry.SelectToken(incomingProperty)?.ToObject(property.PropertyType) ?? null;
 
-                    if (mappedPropertyValue != null)
-                        SetPropertyValue(collectionItem, property.Name, mappedPropertyValue);
-                }
-                else
-                {
-                    var mappedPropertyValue =
-                        entry.SelectToken(incomingProperty)?.ToObject(property.PropertyType) ?? null;
-                    if (mappedPropertyValue != null)
-                        SetPropertyValue(collectionItem, property.Name, mappedPropertyValue);
-                }
+                if (mappedPropertyValue != null)
+                    SetPropertyValue(collectionItem, property.Name, mappedPropertyValue);
             }
         }
 
