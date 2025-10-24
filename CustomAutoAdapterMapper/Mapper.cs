@@ -109,6 +109,8 @@ namespace CustomAutoAdapterMapper
                 .Where(e => e.Values().Any(ee => ee.ToString() == propertyKeyItemValue))
                 .FirstOrDefault();
 
+            if (incomingRecord == null) return;
+
             var matchedProperties = entry
                 .GetType()
                 .GetProperties()
@@ -119,12 +121,10 @@ namespace CustomAutoAdapterMapper
             {
                 var incomingProperty = mapperOptions.Mappings[property.Name];
 
-                if (incomingRecord[incomingProperty] != null)
-                {
-                    var mappedValue = incomingRecord[incomingProperty].ToString();
+                var mappedValue = incomingRecord.SelectToken(incomingProperty)?.ToString();
 
-                    if (!string.IsNullOrEmpty(mappedValue)) SetPropertyValue(entry, property.Name, mappedValue);
-                }
+                if (!string.IsNullOrEmpty(mappedValue))
+                    SetPropertyValue(entry, property.Name, mappedValue);
             }
         }
 
