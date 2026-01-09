@@ -56,6 +56,15 @@ namespace CustomAutoAdapterMapper
                                                string.IsNullOrEmpty(x.GetType()?.GetProperty(options.ItemKey)
                                                    ?.GetValue(x)?.ToString() ?? string.Empty));
 
+            if (itemKeyIdentifierIsEmpty && options.Mappings.ContainsKey(options.ItemKey))
+            {
+                var mappedPropertyName = options.Mappings[options.ItemKey];
+                itemKeyIdentifierIsEmpty = destination.All(x =>
+                    string.IsNullOrEmpty(x.GetType()?.GetProperty(mappedPropertyName)
+                        ?.GetValue(x)?.ToString() ?? string.Empty));
+                options.ItemKey = mappedPropertyName;
+            }
+
             var result = destination == null || destination.Count == 0 || itemKeyIdentifierIsEmpty;
             return result;
         }
@@ -109,6 +118,8 @@ namespace CustomAutoAdapterMapper
                 .Where(e => e.Values().Any(ee => ee.ToString() == propertyKeyItemValue))
                 .FirstOrDefault();
 
+            if (incomingRecord == null) return;
+
             var matchedProperties = entry
                 .GetType()
                 .GetProperties()
@@ -119,12 +130,10 @@ namespace CustomAutoAdapterMapper
             {
                 var incomingProperty = mapperOptions.Mappings[property.Name];
 
-                if (incomingRecord[incomingProperty] != null)
-                {
-                    var mappedValue = incomingRecord[incomingProperty].ToString();
+                var mappedValue = incomingRecord.SelectToken(incomingProperty)?.ToString();
 
-                    if (!string.IsNullOrEmpty(mappedValue)) SetPropertyValue(entry, property.Name, mappedValue);
-                }
+                if (!string.IsNullOrEmpty(mappedValue))
+                    SetPropertyValue(entry, property.Name, mappedValue);
             }
         }
 
