@@ -3,18 +3,21 @@
 [![NuGet](https://img.shields.io/nuget/v/CustomAutoAdapterMapper.svg)](https://www.nuget.org/packages/CustomAutoAdapterMapper/)
 [![.NET Standard 2.0](https://img.shields.io/badge/.NET%20Standard-2.0-blue.svg)](https://docs.microsoft.com/en-us/dotnet/standard/net-standard)
 
-A lightweight, flexible JSON-to-object mapper for C# that handles third-party API responses with mismatched property names and nested structures without requiring contract definitions.
+A lightweight, flexible JSON-to-object mapper for C# that handles third-party API responses with mismatched property
+names and nested structures without requiring contract definitions.
 
 ## 🎯 Problem Statement
 
 In organizations that integrate with multiple external systems:
 
 - **Strongly-typed languages** like C# make it difficult to map unknown or dynamic JSON structures at runtime
-- **Creating contracts** for every third-party API is time-consuming and requires development work for each new integration
+- **Creating contracts** for every third-party API is time-consuming and requires development work for each new
+  integration
 - **Property mismatches** between external APIs and internal models require custom mapping logic
 - **Nested properties** in JSON need to be flattened or mapped to different structures
 
-**CustomAutoAdapterMapper** solves these challenges by providing a flexible, configuration-driven approach to mapping JSON strings to strongly-typed C# objects.
+**CustomAutoAdapterMapper** solves these challenges by providing a flexible, configuration-driven approach to mapping
+JSON strings to strongly-typed C# objects.
 
 ---
 
@@ -223,27 +226,30 @@ var result = jsonResponse.MapCollection(existingApis, options =>
 
 ### `Option` Class Properties
 
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| **`RootKey`** | `string` | ✅ Yes | The JSON property name that contains the array/collection to map. |
-| **`Mappings`** | `Dictionary<string, string>` | ⚠️ Optional | Custom property mappings. **Key** = your C# property name, **Value** = JSON property path (supports dot notation for nested properties). |
-| **`ItemKey`** | `string` | ⚠️ Conditional | Unique identifier property name. **Required** when updating an existing non-empty collection. Used to match items between JSON and your collection. |
+| Property       | Type                         | Required       | Description                                                                                                                                         |
+|----------------|------------------------------|----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| **`RootKey`**  | `string`                     | ✅ Yes          | The JSON property name that contains the array/collection to map.                                                                                   |
+| **`Mappings`** | `Dictionary<string, string>` | ⚠️ Optional    | Custom property mappings. **Key** = your C# property name, **Value** = JSON property path (supports dot notation for nested properties).            |
+| **`ItemKey`**  | `string`                     | ⚠️ Conditional | Unique identifier property name. **Required** when updating an existing non-empty collection. Used to match items between JSON and your collection. |
 
 ### Configuration Details
 
 #### `RootKey`
+
 - Identifies which JSON property contains the array of items to map
 - Must be a valid property in the root JSON object
 - **Throws `RootKeyOptionNullException`** if not provided
 - **Throws `RootKeyPropertyNullException`** if the property doesn't exist in the JSON
 
 #### `Mappings`
+
 - Optional dictionary for custom property mappings
 - **Key**: Your C# class property name
 - **Value**: JSON property path (supports nested properties with dot notation)
 - If not provided, the mapper attempts direct property name matching
 
 **Examples**:
+
 ```csharp
 options.Mappings = new Dictionary<string, string>
 {
@@ -254,12 +260,13 @@ options.Mappings = new Dictionary<string, string>
 ```
 
 #### `ItemKey`
+
 - Specifies a unique identifier property for matching items
 - **Required when**:
-  - Updating an existing collection (non-empty `List<T>`)
-  - You want to preserve existing items and only update mapped properties
+    - Updating an existing collection (non-empty `List<T>`)
+    - You want to preserve existing items and only update mapped properties
 - **Not required when**:
-  - Creating a new collection from scratch (empty or null list)
+    - Creating a new collection from scratch (empty or null list)
 - **Throws `ItemKeyOptionNullException`** if required but not provided
 
 ---
@@ -271,7 +278,9 @@ options.Mappings = new Dictionary<string, string>
 The mapper operates in two modes:
 
 #### 1. **Create Mode** (Empty/Null Collection)
+
 When you pass an empty or null collection:
+
 - Creates new instances of your type `T`
 - Maps all matching properties automatically
 - Applies custom mappings from `options.Mappings`
@@ -286,7 +295,9 @@ jsonResponse.MapCollection(newCollection, options => {
 ```
 
 #### 2. **Update Mode** (Existing Collection)
+
 When you pass a non-empty collection:
+
 - Matches items using `ItemKey`
 - Only updates properties defined in `options.Mappings`
 - Preserves all other properties in existing items
@@ -306,10 +317,10 @@ jsonResponse.MapCollection(existingCollection, options => {
 - The mapper uses **`Newtonsoft.Json`** for type conversion
 - Automatically converts JSON types to C# property types
 - Supports:
-  - Primitives (`string`, `int`, `bool`, `decimal`, etc.)
-  - Nullable types (`int?`, `DateTime?`, etc.)
-  - Complex types (nested objects)
-  - Collections and arrays
+    - Primitives (`string`, `int`, `bool`, `decimal`, etc.)
+    - Nullable types (`int?`, `DateTime?`, etc.)
+    - Complex types (nested objects)
+    - Collections and arrays
 
 ---
 
@@ -317,13 +328,13 @@ jsonResponse.MapCollection(existingCollection, options => {
 
 The library throws custom exceptions for common configuration errors:
 
-| Exception | When Thrown | Solution |
-|-----------|-------------|----------|
-| **`JsonContentException`** | The provided string is not valid JSON | Ensure the input string is valid JSON |
-| **`RootKeyOptionNullException`** | `RootKey` is not provided in options | Set `options.RootKey` to the JSON array property name |
-| **`RootKeyPropertyNullException`** | `RootKey` doesn't exist in the JSON object | Verify the JSON structure and `RootKey` value |
-| **`ItemKeyOptionNullException`** | `ItemKey` is required but not provided (when updating existing collections) | Set `options.ItemKey` to a unique identifier property |
-| **`JsonReaderException`** | JSON cannot be parsed as an object (e.g., it's a raw array) | Ensure JSON is an object with a root property containing the array |
+| Exception                          | When Thrown                                                                 | Solution                                                           |
+|------------------------------------|-----------------------------------------------------------------------------|--------------------------------------------------------------------|
+| **`JsonContentException`**         | The provided string is not valid JSON                                       | Ensure the input string is valid JSON                              |
+| **`RootKeyOptionNullException`**   | `RootKey` is not provided in options                                        | Set `options.RootKey` to the JSON array property name              |
+| **`RootKeyPropertyNullException`** | `RootKey` doesn't exist in the JSON object                                  | Verify the JSON structure and `RootKey` value                      |
+| **`ItemKeyOptionNullException`**   | `ItemKey` is required but not provided (when updating existing collections) | Set `options.ItemKey` to a unique identifier property              |
+| **`JsonReaderException`**          | JSON cannot be parsed as an object (e.g., it's a raw array)                 | Ensure JSON is an object with a root property containing the array |
 
 ### Error Handling Example
 
