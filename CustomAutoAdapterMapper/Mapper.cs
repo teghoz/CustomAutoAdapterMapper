@@ -56,12 +56,13 @@ namespace CustomAutoAdapterMapper
                                                string.IsNullOrEmpty(x.GetType()?.GetProperty(options.ItemKey)
                                                    ?.GetValue(x)?.ToString() ?? string.Empty));
 
-            if (!itemKeyIdentifierIsEmpty && options.Mappings.ContainsKey(options.ItemKey))
+            if (itemKeyIdentifierIsEmpty && options.Mappings.ContainsKey(options.ItemKey))
             {
                 var mappedPropertyName = options.Mappings[options.ItemKey];
                 itemKeyIdentifierIsEmpty = destination.All(x =>
                     string.IsNullOrEmpty(x.GetType()?.GetProperty(mappedPropertyName)
                         ?.GetValue(x)?.ToString() ?? string.Empty));
+                options.ItemKey = mappedPropertyName;
             }
 
             var result = destination == null || destination.Count == 0 || itemKeyIdentifierIsEmpty;
