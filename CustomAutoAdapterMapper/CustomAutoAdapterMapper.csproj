@@ -9,8 +9,8 @@
         <RepositoryUrl>https://github.com/teghoz/CustomAutoAdapterMapper</RepositoryUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>license.txt</PackageLicenseFile>
-        <Version>1.0.6</Version>
-        <PackageReleaseNotes>v1.0.6: Bug fixes and improvements.</PackageReleaseNotes>
+        <Version>1.0.7</Version>
+        <PackageReleaseNotes>v1.0.7: Fixed collection duplication issue when using mapped ItemKey in update mode.</PackageReleaseNotes>
         <PackageProjectUrl>https://github.com/teghoz/CustomAutoAdapterMapper</PackageProjectUrl>
     </PropertyGroup>
 
