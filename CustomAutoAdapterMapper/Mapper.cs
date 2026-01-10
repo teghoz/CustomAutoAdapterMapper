@@ -50,20 +50,12 @@ namespace CustomAutoAdapterMapper
 
         private static bool MapperShouldIterateThroughEntireIncomingCollection<T>(List<T> destination, Option options)
         {
+            // First check if the ItemKey property exists and has values in destination
             var itemKeyIdentifierIsEmpty = destination != null &&
                                            !string.IsNullOrEmpty(options.ItemKey) &&
                                            destination.All(x =>
                                                string.IsNullOrEmpty(x.GetType()?.GetProperty(options.ItemKey)
                                                    ?.GetValue(x)?.ToString() ?? string.Empty));
-
-            if (itemKeyIdentifierIsEmpty && options.Mappings.ContainsKey(options.ItemKey))
-            {
-                var mappedPropertyName = options.Mappings[options.ItemKey];
-                itemKeyIdentifierIsEmpty = destination.All(x =>
-                    string.IsNullOrEmpty(x.GetType()?.GetProperty(mappedPropertyName)
-                        ?.GetValue(x)?.ToString() ?? string.Empty));
-                options.ItemKey = mappedPropertyName;
-            }
 
             var result = destination == null || destination.Count == 0 || itemKeyIdentifierIsEmpty;
             return result;
@@ -108,14 +100,24 @@ namespace CustomAutoAdapterMapper
             if (string.IsNullOrEmpty(mapperOptions.ItemKey))
                 throw new ItemKeyOptionNullException("Item Key Option Not Set!!!!!");
 
-            var keyItemExist = entry.GetType().GetProperty(mapperOptions.ItemKey);
+            // Determine the JSON key to search for (original or mapped)
+            var jsonItemKey = mapperOptions.ItemKey;
+            var objectItemKey = mapperOptions.ItemKey;
+            
+            // If ItemKey is mapped, use the mapping for JSON lookup but keep original for object property
+            if (mapperOptions.Mappings.ContainsKey(mapperOptions.ItemKey))
+            {
+                jsonItemKey = mapperOptions.Mappings[mapperOptions.ItemKey];
+            }
+
+            var keyItemExist = entry.GetType().GetProperty(objectItemKey);
 
             if (keyItemExist == null) return;
             var propertyKeyItemValue =
-                entry.GetType()?.GetProperty(mapperOptions.ItemKey)?.GetValue(entry)?.ToString() ?? null;
+                entry.GetType()?.GetProperty(objectItemKey)?.GetValue(entry)?.ToString() ?? null;
             if (propertyKeyItemValue == null) return;
             var incomingRecord = entries
-                .Where(e => e.Values().Any(ee => ee.ToString() == propertyKeyItemValue))
+                .Where(e => e.SelectToken(jsonItemKey)?.ToString() == propertyKeyItemValue)
                 .FirstOrDefault();
 
             if (incomingRecord == null) return;
