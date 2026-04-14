@@ -148,7 +148,7 @@ namespace CustomAutoAdapterMapper
 
             jsonObject = JObject.Parse(jsonResponse);
 
-            var rootProperty = jsonObject[option.RootKey];
+            var rootProperty = jsonObject.SelectToken(option.RootKey);
 
             if (rootProperty == null)
                 throw new RootKeyPropertyNullException("Root Property Does Not Exist In Object!!!!!");
