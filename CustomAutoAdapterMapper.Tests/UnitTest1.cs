@@ -260,4 +260,112 @@ public class Tests
         Assert.That(result, Is.EqualTo(destinationCollection));
         Assert.That(firstItem.DescriptionVariation, Is.Not.Null);
     }
+
+    [Test]
+    public void TestMapperSupportsNestedRootKeyWithDotNotation()
+    {
+        var json = @"
+        {
+            'data': {
+                'employees': [
+                    { 'API': 'ServiceA', 'Description': 'First', 'Auth': 'apiKey', 'HTTPS': true, 'Cors': 'yes', 'Link': 'https://a.com', 'Category': 'Test' },
+                    { 'API': 'ServiceB', 'Description': 'Second', 'Auth': 'none', 'HTTPS': false, 'Cors': 'no', 'Link': 'https://b.com', 'Category': 'Test' }
+                ]
+            }
+        }";
+
+        var destinationCollection = new List<TestObject>();
+        var result = json.MapCollection(destinationCollection, options =>
+        {
+            options.RootKey = "data.employees";
+        });
+
+        Assert.That(result.Count, Is.EqualTo(2));
+        Assert.That(result.First().API, Is.EqualTo("ServiceA"));
+    }
+
+    [Test]
+    public void TestMapperSupportsThreeLevelNestedRootKeyWithDotNotation()
+    {
+        var json = @"
+        {
+            'response': {
+                'data': {
+                    'employees': [
+                        { 'API': 'ServiceA', 'Description': 'First', 'Auth': 'apiKey', 'HTTPS': true, 'Cors': 'yes', 'Link': 'https://a.com', 'Category': 'Test' }
+                    ]
+                }
+            }
+        }";
+
+        var destinationCollection = new List<TestObject>();
+        var result = json.MapCollection(destinationCollection, options =>
+        {
+            options.RootKey = "response.data.employees";
+        });
+
+        Assert.That(result.Count, Is.EqualTo(1));
+        Assert.That(result.First().API, Is.EqualTo("ServiceA"));
+    }
+
+    [Test]
+    public void TestMapperDoesNotSetMappedPropertyWhenSourceFieldAbsentFromJson()
+    {
+        var json = @"{'entries': [{'API': 'ServiceA', 'Description': 'First', 'Auth': 'none', 'HTTPS': true, 'Cors': 'yes', 'Link': 'https://a.com', 'Category': 'Test'}]}";
+
+        var destinationCollection = new List<TestObjectWithVariation>();
+        var result = json.MapCollection(destinationCollection, options =>
+        {
+            options.RootKey = "entries";
+            options.Mappings = new Dictionary<string, string>
+            {
+                { "DescriptionVariation", "NonExistentField" }
+            };
+        });
+
+        Assert.That(result.Count, Is.EqualTo(1));
+        Assert.That(result.First().DescriptionVariation, Is.Null);
+    }
+
+    [Test]
+    public void TestSeedKnownCollectionReturnsEarlyWhenNoMatchingRecordFoundInFeed()
+    {
+        var json = @"{'entries': [{'API': 'ServiceA', 'Description': 'First', 'Auth': 'apiKey', 'HTTPS': true, 'Cors': 'yes', 'Link': 'https://a.com', 'Category': 'Test'}]}";
+
+        var destinationCollection = new List<TestObject> { new TestObject { API = "NotInFeed" } };
+        var result = json.MapCollection(destinationCollection, options =>
+        {
+            options.RootKey = "entries";
+            options.ItemKey = "API";
+            options.Mappings = new Dictionary<string, string>
+            {
+                { "Description", "Description" }
+            };
+        });
+
+        Assert.That(result.Count, Is.EqualTo(1));
+        Assert.That(result.First().API, Is.EqualTo("NotInFeed"));
+        Assert.That(result.First().Description, Is.Null);
+    }
+
+    [Test]
+    public void TestSeedKnownCollectionUsesRemappedJsonKeyWhenItemKeyIsMapped()
+    {
+        var json = @"{'entries': [{'api_name': 'ServiceA', 'Description': 'First', 'Auth': 'apiKey', 'HTTPS': true, 'Cors': 'yes', 'Link': 'https://a.com', 'Category': 'Test'}]}";
+
+        var destinationCollection = new List<TestObject> { new TestObject { API = "ServiceA" } };
+        var result = json.MapCollection(destinationCollection, options =>
+        {
+            options.RootKey = "entries";
+            options.ItemKey = "API";
+            options.Mappings = new Dictionary<string, string>
+            {
+                { "API", "api_name" },
+                { "Description", "Description" }
+            };
+        });
+
+        Assert.That(result.Count, Is.EqualTo(1));
+        Assert.That(result.First().Description, Is.EqualTo("First"));
+    }
 }
