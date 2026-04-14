@@ -191,7 +191,40 @@ var result = jsonResponse.MapCollection(employees, options =>
 });
 ```
 
-### Example 3: Updating Existing Collections
+### Example 3: Nested Root Array (Dot Notation RootKey)
+
+When the employee array is not at the top level of the response, use dot notation in `RootKey` to traverse the path.
+
+**JSON Response** (array two levels deep):
+
+```json
+{
+    "getemployee": {
+        "employeeDetails": [
+            {
+                "id": "E001",
+                "firstName": "Jane",
+                "lastName": "Doe",
+                "email": "jane.doe@company.com"
+            }
+        ]
+    }
+}
+```
+
+**Mapping Code**:
+
+```csharp
+var employees = new List<Employee>();
+var result = jsonResponse.MapCollection(employees, options =>
+{
+    options.RootKey = "getemployee.employeeDetails"; // dot-notation path to the array
+});
+```
+
+Works with any depth — `"response.data.employees"` resolves three levels deep, and so on.
+
+### Example 4: Updating Existing Collections
 
 Use `ItemKey` to update an existing collection instead of creating a new one.
 
@@ -237,7 +270,7 @@ var result = jsonResponse.MapCollection(existingApis, options =>
 #### `RootKey`
 
 - Identifies which JSON property contains the array of items to map
-- Must be a valid property in the root JSON object
+- Supports **dot notation** to traverse nested objects and locate arrays that are not at the root level (e.g. `"getemployee.employeeDetails"`)
 - **Throws `RootKeyOptionNullException`** if not provided
 - **Throws `RootKeyPropertyNullException`** if the property doesn't exist in the JSON
 
@@ -422,9 +455,11 @@ The library includes comprehensive unit tests covering:
 
 - ✅ Basic property mapping
 - ✅ Custom property mappings
-- ✅ Nested property mapping with dot notation
+- ✅ Nested property mapping with dot notation (within records)
+- ✅ Nested root array traversal with dot notation RootKey (e.g. `"getemployee.employeeDetails"`)
 - ✅ Collection creation (empty destination)
 - ✅ Collection updates (existing destination with ItemKey)
+- ✅ Remapped ItemKey JSON lookups
 - ✅ Exception scenarios
 - ✅ Type conversions
 
