@@ -11,9 +11,17 @@ public class Tests
     [SetUp]
     public void Setup()
     {
-        var client = new HttpClient();
-        var result = client.GetAsync("https://api.publicapis.org/entries").Result;
-        _result = result.Content.ReadAsStringAsync().Result;
+        try
+        {
+            var client = new HttpClient();
+            var result = client.GetAsync("https://api.publicapis.org/entries").Result;
+            _result = result.Content.ReadAsStringAsync().Result;
+        }
+        catch
+        {
+            // network unavailable (e.g. CI), fall through to static fixture
+        }
+
         if (string.IsNullOrEmpty(_result)) _result = Fallback();
     }
 
