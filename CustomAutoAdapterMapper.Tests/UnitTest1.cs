@@ -14,7 +14,7 @@ public class Tests
         try
         {
             var client = new HttpClient();
-            var result = client.GetAsync("https://api.publicapis.org/entries").Result;
+            var result = client.GetAsync("https://dummyjson.com/products?limit=5").Result;
             _result = result.Content.ReadAsStringAsync().Result;
         }
         catch
@@ -28,30 +28,30 @@ public class Tests
     private string Fallback()
     {
         return @"
-                {
-                    'count': 1427,
-                    'entries': [
-                        {
-                            'API': 'AdoptAPet',
-                            'Description': 'Resource to help get pets adopted',
-                            'Auth': 'apiKey',
-                            'HTTPS': true,
-                            'Cors': 'yes',
-                            'Link': 'https://www.adoptapet.com/public/apis/pet_list.html',
-                            'Category': 'Animals'
-                        },
-                        {
-                            'API': 'Axolotl',
-                            'Description': 'Collection of axolotl pictures and facts',
-                            'Auth': '',
-                            'HTTPS': true,
-                            'Cors': 'no',
-                            'Link': 'https://theaxolotlapi.netlify.app/',
-                            'Category': 'Animals'
-                        }
-                    ]
-                }
-            ";
+            {
+                'total': 2,
+                'products': [
+                    {
+                        'id': 1,
+                        'title': 'Essence Mascara Lash Princess',
+                        'description': 'A popular mascara known for volumizing effects.',
+                        'brand': 'Essence',
+                        'category': 'beauty',
+                        'price': 9.99,
+                        'sku': 'RCH45Q1A'
+                    },
+                    {
+                        'id': 2,
+                        'title': 'Eyeshadow Palette with Mirror',
+                        'description': 'An eyeshadow palette for all occasions.',
+                        'brand': 'Glamour Beauty',
+                        'category': 'beauty',
+                        'price': 19.99,
+                        'sku': 'MVCFH27F'
+                    }
+                ]
+            }
+        ";
     }
 
     [Test]
@@ -94,7 +94,7 @@ public class Tests
     public void TestMapperReturnsCollectionWhenRootKeyIsCorrect()
     {
         var destinationCollection = new List<TestObject>();
-        var result = _result.MapCollection(destinationCollection, options => { options.RootKey = "entries"; });
+        var result = _result.MapCollection(destinationCollection, options => { options.RootKey = "products"; });
         Assert.That(result, Is.EqualTo(destinationCollection));
     }
 
@@ -104,12 +104,12 @@ public class Tests
         var destinationCollection = new List<TestObjectWithVariation>();
         var result = _result.MapCollection(destinationCollection, options =>
         {
-            options.RootKey = "entries";
+            options.RootKey = "products";
             options.Mappings = new Dictionary<string, string>
             {
-                { "DescriptionVariation", "Description" },
-                { "AuthVariation", "Auth" },
-                { "CategoryVariation", "Category" }
+                { "DescriptionVariation", "description" },
+                { "BrandVariation", "brand" },
+                { "CategoryVariation", "category" }
             };
         });
 
@@ -122,19 +122,17 @@ public class Tests
     [Test]
     public void TestMapperThrowsExceptionWhenCollectionIsNotEmptyAndItemKeyIsNeeded()
     {
-        var client = new HttpClient();
         var publicApiResult = JsonConvert.DeserializeObject<PublicApiViewModelWithVariation>(_result);
-
-        var destinationCollection = publicApiResult.Entries;
+        var destinationCollection = publicApiResult.Products;
 
         Assert.Throws<ItemKeyOptionNullException>(() => _result.MapCollection(destinationCollection, options =>
         {
-            options.RootKey = "entries";
+            options.RootKey = "products";
             options.Mappings = new Dictionary<string, string>
             {
-                { "DescriptionVariation", "Description" },
-                { "AuthVariation", "Auth" },
-                { "CategoryVariation", "Category" }
+                { "DescriptionVariation", "description" },
+                { "BrandVariation", "brand" },
+                { "CategoryVariation", "category" }
             };
         }));
     }
@@ -142,29 +140,28 @@ public class Tests
     [Test]
     public void TestMapperReturnsCorrectCollectionWithMappingConfigurationWithAnEmptyCollectionSupplied()
     {
-        var client = new HttpClient();
         var publicApiResult = JsonConvert.DeserializeObject<PublicApiViewModel>(_result);
 
         var destinationCollection = new List<TestObjectWithVariation>();
         var result = _result.MapCollection(destinationCollection, options =>
         {
-            options.RootKey = "entries";
+            options.RootKey = "products";
             options.Mappings = new Dictionary<string, string>
             {
-                { "DescriptionVariation", "Description" },
-                { "AuthVariation", "Auth" },
-                { "CategoryVariation", "Category" }
+                { "DescriptionVariation", "description" },
+                { "BrandVariation", "brand" },
+                { "CategoryVariation", "category" }
             };
         });
 
-        var firstItemFromOriginal = publicApiResult.Entries.FirstOrDefault();
+        var firstItemFromOriginal = publicApiResult.Products.FirstOrDefault();
         var firstItem = result.FirstOrDefault();
 
         Assert.That(firstItemFromOriginal, Is.Not.Null);
         Assert.That(firstItem.DescriptionVariation, Is.Not.Null);
 
         Assert.That(firstItemFromOriginal.Description, Is.EqualTo(firstItem.DescriptionVariation));
-        Assert.That(firstItemFromOriginal.Auth, Is.EqualTo(firstItem.AuthVariation));
+        Assert.That(firstItemFromOriginal.Brand, Is.EqualTo(firstItem.BrandVariation));
         Assert.That(firstItemFromOriginal.Category, Is.EqualTo(firstItem.CategoryVariation));
         Assert.That(result, Is.EqualTo(destinationCollection));
     }
@@ -172,77 +169,71 @@ public class Tests
     [Test]
     public void TestMapperReturnsCorrectCollectionWithMappingConfigurationWithCollection()
     {
-        var client = new HttpClient();
         var publicApiResult = JsonConvert.DeserializeObject<PublicApiViewModel>(_result);
-
-        var fixture = new Fixture();
         var destinationCollection = JsonConvert.DeserializeObject<PublicApiViewModelWithVariation>(_result);
 
-        var result = _result.MapCollection(destinationCollection.Entries, options =>
+        var result = _result.MapCollection(destinationCollection.Products, options =>
         {
-            options.RootKey = "entries";
-            options.ItemKey = "API";
+            options.RootKey = "products";
+            options.ItemKey = "Title";
             options.Mappings = new Dictionary<string, string>
             {
-                { "DescriptionVariation", "Description" },
-                { "AuthVariation", "Auth" },
-                { "CategoryVariation", "Category" }
+                { "Title", "title" },
+                { "DescriptionVariation", "description" },
+                { "BrandVariation", "brand" },
+                { "CategoryVariation", "category" }
             };
         });
 
-        var firstItemFromOriginal = publicApiResult.Entries.FirstOrDefault();
+        var firstItemFromOriginal = publicApiResult.Products.FirstOrDefault();
         var firstItem = result.FirstOrDefault();
 
         Assert.That(firstItemFromOriginal, Is.Not.Null);
         Assert.That(firstItem.DescriptionVariation, Is.Not.Null);
 
         Assert.That(firstItemFromOriginal.Description, Is.EqualTo(firstItem.DescriptionVariation));
-        Assert.That(firstItemFromOriginal.Auth, Is.EqualTo(firstItem.AuthVariation));
+        Assert.That(firstItemFromOriginal.Brand, Is.EqualTo(firstItem.BrandVariation));
         Assert.That(firstItemFromOriginal.Category, Is.EqualTo(firstItem.CategoryVariation));
-        Assert.That(result, Is.EqualTo(destinationCollection.Entries));
+        Assert.That(result, Is.EqualTo(destinationCollection.Products));
     }
 
     private string SampleCollectionWithNestedObjectsAsProperties()
     {
         return @"
-                {
-                    'count': 1427,
-                    'entries': [
-                        {
-                            'API': 'AdoptAPet',
-                            'Description': 'Resource to help get pets adopted',
-                            'Auth': 'apiKey',
-                            'HTTPS': true,
-                            'Cors': 'yes',
-                            'work': {
-                                'reportsToIdInCompany' : 64,
-                                'employeeIdInCompany' : 140,
-                                'reportsTo': {
-                                    'email': 'somebody@nomail.com'
-                                }
-                            },
-                            'Link': 'https://www.adoptapet.com/public/apis/pet_list.html',
-                            'Category': 'Animals'
-                        },
-                        {
-                            'API': 'Axolotl',
-                            'Description': 'Collection of axolotl pictures and facts',
-                            'Auth': '',
-                            'HTTPS': true,
-                            'Cors': 'no',
-                            'work': {
-                                'reportsToIdInCompany' : 50,
-                                'employeeIdInCompany' : 160,
-                                'reportsTo': {
-                                    'email': 'somebodyelse@nomail.com'
-                                }
-                            },
-                            'Link': 'https://theaxolotlapi.netlify.app/',
-                            'Category': 'Animals'
+            {
+                'total': 2,
+                'products': [
+                    {
+                        'id': 1,
+                        'title': 'Essence Mascara',
+                        'description': 'Resource to help get pets adopted',
+                        'brand': 'Essence',
+                        'category': 'beauty',
+                        'work': {
+                            'reportsToIdInCompany' : 64,
+                            'employeeIdInCompany' : 140,
+                            'reportsTo': {
+                                'email': 'somebody@nomail.com'
+                            }
                         }
-                    ]
-                }
-            ";
+                    },
+                    {
+                        'id': 2,
+                        'title': 'Eyeshadow Palette',
+                        'description': 'Collection of eyeshadow shades',
+                        'brand': 'Glamour',
+                        'category': 'beauty',
+                        'work': {
+                            'reportsToIdInCompany' : 50,
+                            'employeeIdInCompany' : 160,
+                            'reportsTo': {
+                                'email': 'somebodyelse@nomail.com'
+                            }
+                        }
+                    }
+                ]
+            }
+        ";
     }
 
     [Test]
@@ -252,12 +243,12 @@ public class Tests
         var nestedResult = SampleCollectionWithNestedObjectsAsProperties();
         var result = nestedResult.MapCollection(destinationCollection, options =>
         {
-            options.RootKey = "entries";
+            options.RootKey = "products";
             options.Mappings = new Dictionary<string, string>
             {
-                { "DescriptionVariation", "Description" },
-                { "AuthVariation", "Auth" },
-                { "CategoryVariation", "Category" },
+                { "DescriptionVariation", "description" },
+                { "BrandVariation", "brand" },
+                { "CategoryVariation", "category" },
                 { "ReportsToIdInCompanyVariation", "work.reportsToIdInCompany" },
                 { "ReportsToEmailVariation", "work.reportsTo.email" }
             };
@@ -275,9 +266,9 @@ public class Tests
         var json = @"
         {
             'data': {
-                'employees': [
-                    { 'API': 'ServiceA', 'Description': 'First', 'Auth': 'apiKey', 'HTTPS': true, 'Cors': 'yes', 'Link': 'https://a.com', 'Category': 'Test' },
-                    { 'API': 'ServiceB', 'Description': 'Second', 'Auth': 'none', 'HTTPS': false, 'Cors': 'no', 'Link': 'https://b.com', 'Category': 'Test' }
+                'products': [
+                    { 'Id': 1, 'Title': 'ServiceA', 'Description': 'First', 'Brand': 'BrandA', 'Category': 'Test', 'Price': 9.99, 'Sku': 'ABC' },
+                    { 'Id': 2, 'Title': 'ServiceB', 'Description': 'Second', 'Brand': 'BrandB', 'Category': 'Test', 'Price': 19.99, 'Sku': 'DEF' }
                 ]
             }
         }";
@@ -285,11 +276,11 @@ public class Tests
         var destinationCollection = new List<TestObject>();
         var result = json.MapCollection(destinationCollection, options =>
         {
-            options.RootKey = "data.employees";
+            options.RootKey = "data.products";
         });
 
         Assert.That(result.Count, Is.EqualTo(2));
-        Assert.That(result.First().API, Is.EqualTo("ServiceA"));
+        Assert.That(result.First().Title, Is.EqualTo("ServiceA"));
     }
 
     [Test]
@@ -299,8 +290,8 @@ public class Tests
         {
             'response': {
                 'data': {
-                    'employees': [
-                        { 'API': 'ServiceA', 'Description': 'First', 'Auth': 'apiKey', 'HTTPS': true, 'Cors': 'yes', 'Link': 'https://a.com', 'Category': 'Test' }
+                    'products': [
+                        { 'Id': 1, 'Title': 'ServiceA', 'Description': 'First', 'Brand': 'BrandA', 'Category': 'Test', 'Price': 9.99, 'Sku': 'ABC' }
                     ]
                 }
             }
@@ -309,22 +300,22 @@ public class Tests
         var destinationCollection = new List<TestObject>();
         var result = json.MapCollection(destinationCollection, options =>
         {
-            options.RootKey = "response.data.employees";
+            options.RootKey = "response.data.products";
         });
 
         Assert.That(result.Count, Is.EqualTo(1));
-        Assert.That(result.First().API, Is.EqualTo("ServiceA"));
+        Assert.That(result.First().Title, Is.EqualTo("ServiceA"));
     }
 
     [Test]
     public void TestMapperDoesNotSetMappedPropertyWhenSourceFieldAbsentFromJson()
     {
-        var json = @"{'entries': [{'API': 'ServiceA', 'Description': 'First', 'Auth': 'none', 'HTTPS': true, 'Cors': 'yes', 'Link': 'https://a.com', 'Category': 'Test'}]}";
+        var json = @"{'products': [{'Id': 1, 'Title': 'ServiceA', 'Description': 'First', 'Brand': 'BrandA', 'Category': 'Test', 'Price': 9.99, 'Sku': 'ABC'}]}";
 
         var destinationCollection = new List<TestObjectWithVariation>();
         var result = json.MapCollection(destinationCollection, options =>
         {
-            options.RootKey = "entries";
+            options.RootKey = "products";
             options.Mappings = new Dictionary<string, string>
             {
                 { "DescriptionVariation", "NonExistentField" }
@@ -338,37 +329,37 @@ public class Tests
     [Test]
     public void TestSeedKnownCollectionReturnsEarlyWhenNoMatchingRecordFoundInFeed()
     {
-        var json = @"{'entries': [{'API': 'ServiceA', 'Description': 'First', 'Auth': 'apiKey', 'HTTPS': true, 'Cors': 'yes', 'Link': 'https://a.com', 'Category': 'Test'}]}";
+        var json = @"{'products': [{'Id': 1, 'Title': 'ServiceA', 'Description': 'First', 'Brand': 'BrandA', 'Category': 'Test', 'Price': 9.99, 'Sku': 'ABC'}]}";
 
-        var destinationCollection = new List<TestObject> { new TestObject { API = "NotInFeed" } };
+        var destinationCollection = new List<TestObject> { new TestObject { Title = "NotInFeed" } };
         var result = json.MapCollection(destinationCollection, options =>
         {
-            options.RootKey = "entries";
-            options.ItemKey = "API";
+            options.RootKey = "products";
+            options.ItemKey = "Title";
             options.Mappings = new Dictionary<string, string>
             {
-                { "Description", "Description" }
+                { "Description", "description" }
             };
         });
 
         Assert.That(result.Count, Is.EqualTo(1));
-        Assert.That(result.First().API, Is.EqualTo("NotInFeed"));
+        Assert.That(result.First().Title, Is.EqualTo("NotInFeed"));
         Assert.That(result.First().Description, Is.Null);
     }
 
     [Test]
     public void TestSeedKnownCollectionUsesRemappedJsonKeyWhenItemKeyIsMapped()
     {
-        var json = @"{'entries': [{'api_name': 'ServiceA', 'Description': 'First', 'Auth': 'apiKey', 'HTTPS': true, 'Cors': 'yes', 'Link': 'https://a.com', 'Category': 'Test'}]}";
+        var json = @"{'products': [{'product_name': 'ServiceA', 'Description': 'First', 'Brand': 'BrandA', 'Category': 'Test', 'Price': 9.99, 'Sku': 'ABC'}]}";
 
-        var destinationCollection = new List<TestObject> { new TestObject { API = "ServiceA" } };
+        var destinationCollection = new List<TestObject> { new TestObject { Title = "ServiceA" } };
         var result = json.MapCollection(destinationCollection, options =>
         {
-            options.RootKey = "entries";
-            options.ItemKey = "API";
+            options.RootKey = "products";
+            options.ItemKey = "Title";
             options.Mappings = new Dictionary<string, string>
             {
-                { "API", "api_name" },
+                { "Title", "product_name" },
                 { "Description", "Description" }
             };
         });
