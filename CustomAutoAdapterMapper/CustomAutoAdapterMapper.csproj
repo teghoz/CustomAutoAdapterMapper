@@ -10,8 +10,8 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>license.txt</PackageLicenseFile>
         <PackageIcon>icon.png</PackageIcon>
-        <Version>1.1.0</Version>
-        <PackageReleaseNotes>v1.1.0: Create Mode now clears the destination list before populating, fixing a doubling bug when callers reused a partially-populated list with empty ItemKey values. Adds optional IsItemEmpty callback on Option for caller-defined emptiness rules.</PackageReleaseNotes>
+        <Version>1.1.1</Version>
+        <PackageReleaseNotes>v1.1.1: Fixes the README image not rendering on NuGet.org (NuGet's renderer strips raw HTML; switched to markdown image syntax). No code changes from v1.1.0.</PackageReleaseNotes>
         <PackageProjectUrl>https://github.com/teghoz/CustomAutoAdapterMapper</PackageProjectUrl>
     </PropertyGroup>
 
