@@ -10,8 +10,8 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>license.txt</PackageLicenseFile>
         <PackageIcon>icon.png</PackageIcon>
-        <Version>1.1.1</Version>
-        <PackageReleaseNotes>v1.1.1: Fixes the README image not rendering on NuGet.org (NuGet's renderer strips raw HTML; switched to markdown image syntax). No code changes from v1.1.0.</PackageReleaseNotes>
+        <Version>1.1.2</Version>
+        <PackageReleaseNotes>v1.1.2: Restores centered logo on the NuGet README via a NuGet-specific README file (README.nuget.md) packed in place of the GitHub README. GitHub keeps its HTML-centered logo; NuGet renders the markdown-only version with the SVG sized to 128px. No code changes from v1.1.0/v1.1.1.</PackageReleaseNotes>
         <PackageProjectUrl>https://github.com/teghoz/CustomAutoAdapterMapper</PackageProjectUrl>
     </PropertyGroup>
 
@@ -20,13 +20,17 @@
             <Pack>True</Pack>
             <PackagePath>\</PackagePath>
         </None>
-        <None Include="..\README.md">
+        <None Include="..\README.nuget.md">
             <Pack>True</Pack>
-            <PackagePath>\</PackagePath>
+            <PackagePath>\README.md</PackagePath>
         </None>
         <None Include="..\branding\icon.png" Condition="Exists('..\branding\icon.png')">
             <Pack>True</Pack>
             <PackagePath>\</PackagePath>
+        </None>
+        <None Include="..\branding\icon-header.svg">
+            <Pack>True</Pack>
+            <PackagePath>\branding\icon-header.svg</PackagePath>
         </None>
     </ItemGroup>
 

@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="branding/icon.svg" alt="CustomAutoAdapterMapper" width="128" height="128">
-</p>
+![CustomAutoAdapterMapper](branding/icon-header.svg)
 
 # CustomAutoAdapterMapper
 
