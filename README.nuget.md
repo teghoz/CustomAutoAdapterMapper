@@ -1,4 +1,4 @@
-![CustomAutoAdapterMapper](https://raw.githubusercontent.com/teghoz/CustomAutoAdapterMapper/main/branding/icon.svg)
+![CustomAutoAdapterMapper](branding/icon-header.svg)
 
 # CustomAutoAdapterMapper
 

@@ -28,6 +28,10 @@
             <Pack>True</Pack>
             <PackagePath>\</PackagePath>
         </None>
+        <None Include="..\branding\icon-header.svg">
+            <Pack>True</Pack>
+            <PackagePath>\branding\icon-header.svg</PackagePath>
+        </None>
     </ItemGroup>
 
     <ItemGroup>
