@@ -9,8 +9,9 @@
         <RepositoryUrl>https://github.com/teghoz/CustomAutoAdapterMapper</RepositoryUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>license.txt</PackageLicenseFile>
-        <Version>1.0.8</Version>
-        <PackageReleaseNotes>v1.0.8: Fixed ItemKey mapping logic to correctly identify update vs create mode, preventing duplicate records in collections.</PackageReleaseNotes>
+        <PackageIcon>icon.png</PackageIcon>
+        <Version>1.1.0</Version>
+        <PackageReleaseNotes>v1.1.0: Create Mode now clears the destination list before populating, fixing a doubling bug when callers reused a partially-populated list with empty ItemKey values. Adds optional IsItemEmpty callback on Option for caller-defined emptiness rules.</PackageReleaseNotes>
         <PackageProjectUrl>https://github.com/teghoz/CustomAutoAdapterMapper</PackageProjectUrl>
     </PropertyGroup>
 
@@ -20,6 +21,10 @@
             <PackagePath>\</PackagePath>
         </None>
         <None Include="..\README.md">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+        <None Include="..\branding\icon.png" Condition="Exists('..\branding\icon.png')">
             <Pack>True</Pack>
             <PackagePath>\</PackagePath>
         </None>

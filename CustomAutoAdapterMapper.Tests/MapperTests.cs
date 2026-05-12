@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace CustomAutoAdapterMapper.Tests;
 
-public class Tests
+public class MapperTests
 {
     private string _result;
 
@@ -366,5 +366,244 @@ public class Tests
 
         Assert.That(result.Count, Is.EqualTo(1));
         Assert.That(result.First().Description, Is.EqualTo("First"));
+    }
+
+    [Test]
+    public void TestCreateModeClearsDestinationWhenAllItemKeyValuesAreEmpty()
+    {
+        var json = @"{'products': [
+            {'product_name': 'ServiceA', 'description': 'First'},
+            {'product_name': 'ServiceB', 'description': 'Second'}
+        ]}";
+
+        var destinationCollection = new List<TestObject>
+        {
+            new TestObject { Title = null, Description = "ghost-1" },
+            new TestObject { Title = "",   Description = "ghost-2" }
+        };
+
+        var result = json.MapCollection(destinationCollection, options =>
+        {
+            options.RootKey = "products";
+            options.ItemKey = "Title";
+            options.Mappings = new Dictionary<string, string>
+            {
+                { "Title", "product_name" },
+                { "Description", "description" }
+            };
+        });
+
+        Assert.That(result.Count, Is.EqualTo(2));
+        Assert.That(result.Any(r => r.Description == "ghost-1"), Is.False);
+        Assert.That(result.Any(r => r.Description == "ghost-2"), Is.False);
+        Assert.That(result.Select(r => r.Title), Is.EquivalentTo(new[] { "ServiceA", "ServiceB" }));
+    }
+
+    [Test]
+    public void TestUpdateModeStillRunsWhenSomeItemKeysArePopulated()
+    {
+        var json = @"{'products': [
+            {'product_name': 'ServiceA', 'description': 'Fresh'}
+        ]}";
+
+        var destinationCollection = new List<TestObject>
+        {
+            new TestObject { Title = "ServiceA", Description = "old" },
+            new TestObject { Title = null,       Description = "ghost" }
+        };
+
+        var result = json.MapCollection(destinationCollection, options =>
+        {
+            options.RootKey = "products";
+            options.ItemKey = "Title";
+            options.Mappings = new Dictionary<string, string>
+            {
+                { "Title", "product_name" },
+                { "Description", "description" }
+            };
+        });
+
+        Assert.That(result.Count, Is.EqualTo(2));
+        Assert.That(result.First(r => r.Title == "ServiceA").Description, Is.EqualTo("Fresh"));
+        Assert.That(result.Any(r => r.Description == "ghost"), Is.True);
+    }
+
+    [Test]
+    public void TestIsItemEmptyCallbackTriggersCreateModeAndClearsDestination()
+    {
+        var json = @"{'products': [
+            {'product_name': 'ServiceA', 'description': 'First'},
+            {'product_name': 'ServiceB', 'description': 'Second'}
+        ]}";
+
+        var destinationCollection = new List<TestObject>
+        {
+            new TestObject { Title = "ServiceA", Description = null, Brand = null },
+            new TestObject { Title = "ServiceB", Description = null, Brand = null }
+        };
+
+        var result = json.MapCollection(destinationCollection, options =>
+        {
+            options.RootKey = "products";
+            options.ItemKey = "Title";
+            options.IsItemEmpty = item => string.IsNullOrEmpty(((TestObject)item).Description);
+            options.Mappings = new Dictionary<string, string>
+            {
+                { "Title", "product_name" },
+                { "Description", "description" }
+            };
+        });
+
+        Assert.That(result.Count, Is.EqualTo(2));
+        Assert.That(result.All(r => !string.IsNullOrEmpty(r.Description)), Is.True);
+    }
+
+    [Test]
+    public void TestIsItemEmptyCallbackTakesPrecedenceOverItemKeyDefault()
+    {
+        var json = @"{'products': [
+            {'product_name': 'ServiceA', 'description': 'Fresh'}
+        ]}";
+
+        var destinationCollection = new List<TestObject>
+        {
+            new TestObject { Title = "ServiceA", Description = "old" }
+        };
+
+        var result = json.MapCollection(destinationCollection, options =>
+        {
+            options.RootKey = "products";
+            options.ItemKey = "Title";
+            options.IsItemEmpty = _ => true;
+            options.Mappings = new Dictionary<string, string>
+            {
+                { "Title", "product_name" },
+                { "Description", "description" }
+            };
+        });
+
+        Assert.That(result.Count, Is.EqualTo(1));
+        Assert.That(result.First().Description, Is.EqualTo("Fresh"));
+        Assert.That(result.Any(r => r.Description == "old"), Is.False);
+    }
+
+    [Test]
+    public void TestUpdateModeReturnsEarlyWhenItemKeyDoesNotExistOnDestinationType()
+    {
+        var json = @"{'products': [{'product_name': 'A', 'description': 'Fresh'}]}";
+
+        var destinationCollection = new List<TestObject>
+        {
+            new TestObject { Title = "A", Description = "old" }
+        };
+
+        var result = json.MapCollection(destinationCollection, options =>
+        {
+            options.RootKey = "products";
+            options.ItemKey = "NonExistentProperty";
+            options.IsItemEmpty = _ => false;
+            options.Mappings = new Dictionary<string, string>
+            {
+                { "Description", "description" }
+            };
+        });
+
+        Assert.That(result.Count, Is.EqualTo(1));
+        Assert.That(result.First().Description, Is.EqualTo("old"));
+    }
+
+    [Test]
+    public void TestUpdateModeReturnsEarlyWhenItemKeyValueIsNullOnDestinationItem()
+    {
+        var json = @"{'products': [{'title': 'A', 'description': 'Fresh'}]}";
+
+        var destinationCollection = new List<TestObject>
+        {
+            new TestObject { Title = null, Description = "old" }
+        };
+
+        var result = json.MapCollection(destinationCollection, options =>
+        {
+            options.RootKey = "products";
+            options.ItemKey = "Title";
+            options.IsItemEmpty = _ => false;
+            options.Mappings = new Dictionary<string, string>
+            {
+                { "Description", "description" }
+            };
+        });
+
+        Assert.That(result.Count, Is.EqualTo(1));
+        Assert.That(result.First().Description, Is.EqualTo("old"));
+    }
+
+    [Test]
+    public void TestUpdateModeSkipsEmptyMappedJsonValuesForExistingItem()
+    {
+        var json = @"{'products': [{'title': 'A', 'description': ''}]}";
+
+        var destinationCollection = new List<TestObject>
+        {
+            new TestObject { Title = "A", Description = "original" }
+        };
+
+        var result = json.MapCollection(destinationCollection, options =>
+        {
+            options.RootKey = "products";
+            options.ItemKey = "Title";
+            options.Mappings = new Dictionary<string, string>
+            {
+                { "Description", "description" }
+            };
+        });
+
+        Assert.That(result.First().Description, Is.EqualTo("original"));
+    }
+
+    [Test]
+    public void TestDefaultEmptyCheckTreatsNonExistentItemKeyPropertyAsEmpty()
+    {
+        var json = @"{'products': [{'product_name': 'A', 'description': 'Fresh'}]}";
+
+        var destinationCollection = new List<TestObject>
+        {
+            new TestObject { Title = "A", Description = "ghost" }
+        };
+
+        var result = json.MapCollection(destinationCollection, options =>
+        {
+            options.RootKey = "products";
+            options.ItemKey = "NonExistentProperty";
+            options.Mappings = new Dictionary<string, string>
+            {
+                { "Title", "product_name" },
+                { "Description", "description" }
+            };
+        });
+
+        Assert.That(result.Count, Is.EqualTo(1));
+        Assert.That(result.First().Title, Is.EqualTo("A"));
+        Assert.That(result.First().Description, Is.EqualTo("Fresh"));
+        Assert.That(result.Any(r => r.Description == "ghost"), Is.False);
+    }
+
+    [Test]
+    public void TestSetPropertyValueSkipsReadOnlyProperties()
+    {
+        var json = @"{'products': [{'ro': 'newval'}]}";
+
+        var destinationCollection = new List<TestObjectWithReadOnly>();
+
+        var result = json.MapCollection(destinationCollection, options =>
+        {
+            options.RootKey = "products";
+            options.Mappings = new Dictionary<string, string>
+            {
+                { "ReadOnlyField", "ro" }
+            };
+        });
+
+        Assert.That(result.Count, Is.EqualTo(1));
+        Assert.That(result.First().ReadOnlyField, Is.EqualTo("fixed"));
     }
 }

@@ -31,6 +31,12 @@ jobs:
           sed -i 's|<Version>.*</Version>|<Version>${{ inputs.version }}</Version>|' CustomAutoAdapterMapper/CustomAutoAdapterMapper.csproj
           echo "Version set to ${{ inputs.version }}"
 
+      - name: Generate package icon (SVG -> PNG)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y librsvg2-bin
+          rsvg-convert -w 256 -h 256 branding/icon.svg -o branding/icon.png
+
       - name: Restore dependencies
         run: dotnet restore CustomAutoAdapterMapper/CustomAutoAdapterMapper.sln
 
