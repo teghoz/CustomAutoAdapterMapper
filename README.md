@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="branding/icon.svg" alt="CustomAutoAdapterMapper" width="128" height="128">
+</p>
+
 # CustomAutoAdapterMapper
 
 [![NuGet](https://img.shields.io/nuget/v/CustomAutoAdapterMapper.svg)](https://www.nuget.org/packages/CustomAutoAdapterMapper/)

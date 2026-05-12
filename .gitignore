@@ -2,3 +2,6 @@ obj
 CustomAutoAdapterMapper/.vs/
 bin/
 .idea
+TestResults/
+.claude/
+branding/icon.png
