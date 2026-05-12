@@ -20,6 +20,9 @@ namespace CustomAutoAdapterMapper
             var entries = rootProperty.ToList();
 
             if (MapperShouldIterateThroughEntireIncomingCollection(destination, mapperOptions))
+            {
+                destination?.Clear();
+
                 foreach (var entry in entries)
                 {
                     var collectionItem = Activator.CreateInstance<T>();
@@ -28,6 +31,7 @@ namespace CustomAutoAdapterMapper
                     SeedMappedPropertiesOfItem(entry, collectionItem, mapperOptions);
                     destination.Add(collectionItem);
                 }
+            }
             else
                 foreach (var entry in destination)
                     SeedKnownCollectionOfItem(entries, entry, mapperOptions);
@@ -50,15 +54,18 @@ namespace CustomAutoAdapterMapper
 
         private static bool MapperShouldIterateThroughEntireIncomingCollection<T>(List<T> destination, Option options)
         {
-            // First check if the ItemKey property exists and has values in destination
-            var itemKeyIdentifierIsEmpty = destination != null &&
-                                           !string.IsNullOrEmpty(options.ItemKey) &&
-                                           destination.All(x =>
-                                               string.IsNullOrEmpty(x.GetType()?.GetProperty(options.ItemKey)
-                                                   ?.GetValue(x)?.ToString() ?? string.Empty));
+            if (destination == null || destination.Count == 0) return true;
 
-            var result = destination == null || destination.Count == 0 || itemKeyIdentifierIsEmpty;
-            return result;
+            // Caller-provided emptiness rule takes precedence over the ItemKey-based default.
+            if (options.IsItemEmpty != null)
+                return destination.All(x => options.IsItemEmpty(x));
+
+            // Default: treat the collection as empty when every item has an empty ItemKey value.
+            if (string.IsNullOrEmpty(options.ItemKey)) return false;
+
+            return destination.All(x =>
+                string.IsNullOrEmpty(x.GetType()?.GetProperty(options.ItemKey)
+                    ?.GetValue(x)?.ToString() ?? string.Empty));
         }
 
         private static void SeedCollectionItem<T>(JToken entry, T collectionItem)

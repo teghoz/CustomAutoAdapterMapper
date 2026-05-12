@@ -1,0 +1,27 @@
+<svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="44" fill="url(#bg)"/>
+
+  <!-- { -->
+  <path d="M 70 64 Q 50 64 50 84 L 50 116 Q 50 128 38 128 Q 50 128 50 140 L 50 172 Q 50 192 70 192"
+        stroke="white" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- } -->
+  <path d="M 106 64 Q 126 64 126 84 L 126 116 Q 126 128 138 128 Q 126 128 126 140 L 126 172 Q 126 192 106 192"
+        stroke="white" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- arrow -->
+  <path d="M 150 128 L 184 128 M 174 116 L 188 128 L 174 140"
+        stroke="white" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- object box on right -->
+  <rect x="196" y="74" width="42" height="108" rx="7" fill="white"/>
+  <line x1="204" y1="96"  x2="230" y2="96"  stroke="#1d4ed8" stroke-width="4" stroke-linecap="round"/>
+  <line x1="204" y1="116" x2="230" y2="116" stroke="#1d4ed8" stroke-width="4" stroke-linecap="round"/>
+  <line x1="204" y1="136" x2="222" y2="136" stroke="#1d4ed8" stroke-width="4" stroke-linecap="round"/>
+  <line x1="204" y1="156" x2="226" y2="156" stroke="#1d4ed8" stroke-width="4" stroke-linecap="round"/>
+</svg>
