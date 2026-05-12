@@ -10,8 +10,8 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>license.txt</PackageLicenseFile>
         <PackageIcon>icon.png</PackageIcon>
-        <Version>1.1.1</Version>
-        <PackageReleaseNotes>v1.1.1: Fixes the README image not rendering on NuGet.org (NuGet's renderer strips raw HTML; switched to markdown image syntax). No code changes from v1.1.0.</PackageReleaseNotes>
+        <Version>1.1.2</Version>
+        <PackageReleaseNotes>v1.1.2: Sets the package logo SVG's intrinsic size to 128x128 so it renders at a sensible scale in the NuGet README. v1.1.1's switch to markdown image syntax lost the size constraint and the logo rendered at the renderer's default (unbounded) size. No code changes from v1.1.0/v1.1.1.</PackageReleaseNotes>
         <PackageProjectUrl>https://github.com/teghoz/CustomAutoAdapterMapper</PackageProjectUrl>
     </PropertyGroup>
 
